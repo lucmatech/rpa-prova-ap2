@@ -114,4 +114,3 @@ if __name__ == "__main__":
     extrair_dados_livros()
 
     print("\n✅ Etapas 1 e 2 concluídas. Arquivos 'paises.db' e 'livraria.db' gerados.")
-
