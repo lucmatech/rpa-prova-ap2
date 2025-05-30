@@ -153,5 +153,6 @@ if __name__ == "__main__":
 
     print("\n✅ Etapas 1 e 2 concluídas. Arquivos 'paises.db' e 'livraria.db' gerados.")
     
-
+    print("\n📄 Gerando relatório final em Excel...")
+    gerar_relatorio_excel()
 
