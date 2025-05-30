@@ -1,12 +1,13 @@
 import sqlite3
 import requests
 import urllib3
+from openpyxl import Workbook
+from datetime import datetime
+from bs4 import BeautifulSoup
 
-# Desativa avisos SSL temporariamente (caso necessário)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===== Parte 1: API de países =====
-
 def extrair_dados_paises():
     conn = sqlite3.connect("paises.db")
     cursor = conn.cursor()
@@ -66,11 +67,6 @@ def extrair_dados_paises():
 
     
 # ===== Parte 2: Web Scraping dos livros =====
-
-from bs4 import BeautifulSoup
-import sqlite3
-import requests
-
 def extrair_dados_livros():
     conn = sqlite3.connect("livraria.db")
     cursor = conn.cursor()
@@ -99,13 +95,49 @@ def extrair_dados_livros():
             INSERT INTO livros VALUES (?, ?, ?, ?)
         """, (titulo, preco, avaliacao, disponibilidade))
 
-        print(f"📚 Livro salvo: {titulo}")
+        # print(f"📚 Livro salvo: {titulo}")
 
     conn.commit()
     conn.close()
 
-# ===== Execução principal =====
+# ===== Parte 2: Gerando relatório em excel =====
+def gerar_relatorio_excel():
+    wb = Workbook()
+    ws1 = wb.active
+    ws1.title = "Países"
 
+    ws1.append(["Relatório Gerado por: Luiza Matias e Miguel Ectil"])
+    ws1.append(["Data de geração:", datetime.now().strftime("%d/%m/%Y %H:%M")])
+    ws1.append([])
+
+    # Tabela de países
+    ws1.append(["Nome Comum", "Nome Oficial", "Capital", "Continente", "Região", "Sub-região",
+                "População", "Área", "Moeda", "Símbolo", "Idioma", "Fuso Horário", "Bandeira"])
+
+    conn = sqlite3.connect("paises.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM paises")
+    for row in cursor.fetchall():
+        ws1.append(row)
+    conn.close()
+
+    # Nova aba para livros
+    ws2 = wb.create_sheet(title="Livros")
+    ws2.append(["Título", "Preço", "Avaliação", "Disponibilidade"])
+
+    conn = sqlite3.connect("livraria.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM livros")
+    for row in cursor.fetchall():
+        ws2.append(row)
+    conn.close()
+
+    # Salvar o arquivo
+    wb.save("relatorio_final.xlsx")
+    print("📄 Relatório gerado com sucesso: relatorio_final.xlsx")
+
+
+# ===== Execução principal =====
 if __name__ == "__main__":
     print("🔎 Iniciando extração de dados de países...")
     extrair_dados_paises()
@@ -114,3 +146,12 @@ if __name__ == "__main__":
     extrair_dados_livros()
 
     print("\n✅ Etapas 1 e 2 concluídas. Arquivos 'paises.db' e 'livraria.db' gerados.")
+    
+    print("\n📄 Gerando relatório final em Excel...")
+    gerar_relatorio_excel()
+
+### Informações dos alunos
+# Nome = "Luiza Cristina Gonçalves Matias"
+# RA = 2400797
+# Nome = "Miguel Ectil"
+# RA = 2301985
